@@ -1,0 +1,5 @@
+[H[2JPlease drag in the folder you want to copy and press Enter: 
+dir_source:  /Users/acc
+user_name:  acc
+Is the username "acc"? (Y/N)
+acc is target.

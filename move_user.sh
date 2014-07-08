@@ -20,10 +20,10 @@ exec > >(tee logfile.txt)
 
 # begin
 clear
-scpname=`basename $0`
+scpname=$(basename "$0")
 
 # Check to make sure we are root
-if [ `id -u` != "0" ]
+if [ $(id -u) != "0" ]
 then
    echo "$scpname must be run as root"
    exit 1
@@ -41,28 +41,47 @@ fi
 
 #Check it is a folder that has been draged on
 if [ ! -d "$DIR_SOURCE" ]; then
-	echo ""$DIR_SOURCE" is not a folder..."
+	echo "$DIR_SOURCE is not a folder..."
 	exit 1
 fi	
 
 #Remove Escapes from $DIR_SOURCE
-DIR_SOURCE=`echo $DIR_SOURCE | sed 's/\\\//g'`
-echo "dir_source: " $DIR_SOURCE
+DIR_SOURCE=$(echo "$DIR_SOURCE" | sed "s/\\\//g")
+echo "dir_source: " "$DIR_SOURCE"
 
 # chop up dir source and extract the username
-USER_NAME=$(basename $DIR_SOURCE)
-echo "user_name: " $USER_NAME
+USER_NAME=$(basename "$DIR_SOURCE")
+echo "user_name: " "$USER_NAME"
 
 # confirm the username is what we'll be using for the local/network account
 if [ "$CONFIRM_USER" == "" ]; then
 	echo "Is the username \"$USER_NAME\"? (Y/N)"
 	while [ -z "$CONFIRM_USER" ]; do
-	read CONFIRM_USER
+		read CONFIRM_USER
+		if [ "$CONFIRM_USER" == "Y" ]; then
+			DIR_NAME=$USER_NAME
+			echo "$DIR_NAME is target."
+		else [ "$CONFIRM_USER" == "N" ]; 
+				echo "Please enter the username: "
+				while [ -z "$NEW_DIR_NAME" ]; do
+					read NEW_DIR_NAME
+				DIR_NAME=$NEW_DIR_NAME
+				echo "$DIR_NAME will be used."
+				done
+		fi
 	done
+	fi
 else
 	CONFIRM_USER="N"
+	echo "Please enter the username: "
+#	while [ -z "$CONFIRM_USER" ]; do
+#		read CONFIRM_USER
+#	DIR_NAME = $USER_NAME
+#	echo "$DIR_NAME will be used."
+
 fi
-echo "$CONFIRM_USER"
+
+
 
 # create the user directory
 # mkdir /Users/$destinationUser
