@@ -1,5 +1,6 @@
 #!/bin/bash
 # copy data from Windows 7 (and XP?) machine to locally created accounts
+# Modified 2014-07-08
 # by Adam Gerstein
 # gersteina1@gmail.com
 # https://github.com/agerstein/MoveUser
@@ -11,7 +12,7 @@ ACCOUNTPASSWORD="temppassword"
 # pseudo code:
 # select user account (drag into terminal window)
 # create local account
-# 	logic to create locally vs AD depending on where I am
+# 	logic to create locally vs AD depending on where I am?
 # copy data from Win7 drive to locally created user account
 # move data from "My *foldername*" to relevant folder
 # chmod directory for ownership
