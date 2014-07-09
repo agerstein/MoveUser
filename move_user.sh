@@ -1,10 +1,11 @@
 #!/bin/bash
 # copy data from Windows 7 (and XP?) machine to locally created accounts
 # Modified 2014-07-08
+# Version 1.1
 # by Adam Gerstein
 # gersteina1@gmail.com
 # https://github.com/agerstein/MoveUser
-Version=1.1
+
 
 ACCOUNTPASSWORD="temppassword"
 # you should change this to reflect your requirements
@@ -93,7 +94,7 @@ else
 fi
 
 # create the user directory
-mkdir /Users/$DIR_NAME
+mkdir /Users/"$DIR_NAME"
 echo "mkdir /Users/$DIR_NAME"
 echo "Home for $DIR_NAME now located at /Users/$DIR_NAME"
 echo "    "
@@ -106,26 +107,26 @@ echo "    "
 
 # this should work for local accounts
 echo "Creating...."
-/usr/bin/dscl . create /Users/${DIR_NAME} # create account
+/usr/bin/dscl . create /Users/"${DIR_NAME}" # create account
 echo "... account"
-/usr/bin/dscl . create /Users/${DIR_NAME} UserShell /bin/bash # set shell
+/usr/bin/dscl . create /Users/"${DIR_NAME}" UserShell /bin/bash # set shell
 echo "... shell set"
-/usr/bin/dscl . create /Users/${DIR_NAME} RealName "$REAL_NAME" # set real name
+/usr/bin/dscl . create /Users/"${DIR_NAME}" RealName "$REAL_NAME" # set real name
 echo "... real name set"
-/usr/bin/dscl . create /Users/${DIR_NAME} UniqueID 512 # assign a unique ID
+/usr/bin/dscl . create /Users/"${DIR_NAME}" UniqueID 512 # assign a unique ID
 echo "... UID"
 # shouldn't do it this way, since if you move multiple users, they will have the same UID. That's bad. But if you're using this, it's likely for one user, or you will have turned switched this off and turned on the directory service version
 
-/usr/bin/dscl . create /Users/${DIR_NAME} PrimaryGroupID 20 # assign a primary group
+/usr/bin/dscl . create /Users/"${DIR_NAME}" PrimaryGroupID 20 # assign a primary group
 echo "... Primary Group assigned"
-/usr/bin/dscl . create /Users/${DIR_NAME} NFSHomeDirectory /Users/${DIR_NAME} # set the users NFS Home
+/usr/bin/dscl . create /Users/"${DIR_NAME}" NFSHomeDirectory /Users/"${DIR_NAME}" # set the users NFS Home
 echo "... NFS Home set"
-/usr/bin/dscl . passwd /Users/${DIR_NAME} $ACCOUNTPASSWORD
+/usr/bin/dscl . passwd /Users/"${DIR_NAME}" $ACCOUNTPASSWORD
 echo "... temp password set"
 echo "    "
 
 # ditto the User Template into the user folder
-ditto /System/Library/User\ Template/English.lproj /Users/$DIR_NAME
+ditto /System/Library/User\ Template/English.lproj /Users/"$DIR_NAME"
 echo "Copying from User Template"
 echo "Done"
 sleep 3
@@ -143,17 +144,17 @@ sleep 2
 
 # copy the user data into the home
 echo "Copying user data to \"Transfer\" on their Desktop"
-mkdir /Users/$DIR_NAME/Desktop/Transfer
+mkdir /Users/"$DIR_NAME"/Desktop/Transfer
 echo "mkdir /Users/$DIR_NAME/Desktop/Transfer"
 echo "   "
 
-ditto -v $DIR_SOURCE /Users/$DIR_NAME/Desktop/Transfer/
+ditto -v "$DIR_SOURCE" /Users/"$DIR_NAME"/Desktop/Transfer/
 echo "ditto $DIR_SOURCE /Users/$DIR_NAME/Desktop/Transfer/"
 echo "  "
 sleep 6
 
 # change ownership so that the local/network account has ownership
 echo "/usr/sbin/chown -R ${DIR_NAME} /Users/$DIR_NAME"
-/usr/sbin/chown -R ${DIR_NAME} /Users/$DIR_NAME
+/usr/sbin/chown -R "${DIR_NAME}" /Users/"$DIR_NAME"
 
 echo "Done."
