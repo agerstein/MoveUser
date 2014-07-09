@@ -1,8 +1,12 @@
 #!/bin/bash
-
 # copy data from Windows 7 (and XP?) machine to locally created accounts
 # by Adam Gerstein
-# v1.0
+# gersteina1@gmail.com
+# https://github.com/agerstein/MoveUser
+Version=1.1
+
+ACCOUNTPASSWORD="temppassword"
+# you should change this to reflect your requirements
 
 # pseudo code:
 # select user account (drag into terminal window)
@@ -15,8 +19,9 @@
 
 # logs everything we do to logfile.txt
 exec > >(tee logfile.txt)
-# http://stackoverflow.com/questions/3173131/redirect-copy-of-stdout-to-log-file-from-within-bash-script-itself
+#exec | tee logfile.txt
 
+# http://stackoverflow.com/questions/3173131/redirect-copy-of-stdout-to-log-file-from-within-bash-script-itself
 
 # begin
 clear
@@ -31,7 +36,7 @@ fi
 
 #If $1 is empty ask user for input
 if [ "$1" == "" ]; then
-	echo "Please drag in the folder you want to copy and press Enter: "
+	echo "Please drag in the home directory you want to copy and press Enter: "
 	while [ -z "$DIR_SOURCE" ]; do
 	read DIR_SOURCE
 	done
@@ -60,7 +65,7 @@ if [ "$CONFIRM_USER" == "" ]; then
 		read CONFIRM_USER
 		if [ "$CONFIRM_USER" == "Y" ]; then
 			DIR_NAME=$USER_NAME
-			echo "$DIR_NAME is target."
+			echo "$DIR_NAME will be used."
 		else [ "$CONFIRM_USER" == "N" ]; 
 				echo "Please enter the username: "
 				while [ -z "$NEW_DIR_NAME" ]; do
@@ -70,30 +75,84 @@ if [ "$CONFIRM_USER" == "" ]; then
 				done
 		fi
 	done
-	fi
 else
 	CONFIRM_USER="N"
 	echo "Please enter the username: "
-#	while [ -z "$CONFIRM_USER" ]; do
-#		read CONFIRM_USER
-#	DIR_NAME = $USER_NAME
-#	echo "$DIR_NAME will be used."
-
 fi
 
-
+# prompt for their full name
+if [ "$REAL_NAME" == "" ]; then
+	echo "Please enter users full name:"
+	while [ -z "$REAL_NAME" ]; do
+		read REAL_NAME
+	done
+else
+	REAL_NAME="Average User"
+	echo "Please enter the username: "
+fi
 
 # create the user directory
-# mkdir /Users/$destinationUser
+mkdir /Users/$DIR_NAME
+echo "mkdir /Users/$DIR_NAME"
+echo "Home for $DIR_NAME now located at /Users/$DIR_NAME"
+echo "    "
+
+# create the account
+
+# this should work when you have a directory service, i.e. AD configured
+#/System/Library/CoreServices/ManagedClient.app/Contents/Resources/createmobileaccount -n $DIR_NAME
+#echo "Account for $DIR_NAME has been created on this computer"			
+
+# this should work for local accounts
+echo "Creating...."
+/usr/bin/dscl . create /Users/${DIR_NAME} # create account
+echo "... account"
+/usr/bin/dscl . create /Users/${DIR_NAME} UserShell /bin/bash # set shell
+echo "... shell set"
+/usr/bin/dscl . create /Users/${DIR_NAME} RealName "$REAL_NAME" # set real name
+echo "... real name set"
+/usr/bin/dscl . create /Users/${DIR_NAME} UniqueID 512 # assign a unique ID
+echo "... UID"
+# shouldn't do it this way, since if you move multiple users, they will have the same UID. That's bad. But if you're using this, it's likely for one user, or you will have turned switched this off and turned on the directory service version
+
+/usr/bin/dscl . create /Users/${DIR_NAME} PrimaryGroupID 20 # assign a primary group
+echo "... Primary Group assigned"
+/usr/bin/dscl . create /Users/${DIR_NAME} NFSHomeDirectory /Users/${DIR_NAME} # set the users NFS Home
+echo "... NFS Home set"
+/usr/bin/dscl . passwd /Users/${DIR_NAME} $ACCOUNTPASSWORD
+echo "... temp password set"
+echo "    "
 
 # ditto the User Template into the user folder
-# ditto /System/Library/User\ Template/English.lproj /Users/$destinationUser
+ditto /System/Library/User\ Template/English.lproj /Users/$DIR_NAME
+echo "Copying from User Template"
+echo "Done"
+sleep 3
+echo "    "
 
-#????
-# chown -R <local admin ID to copy data in> /Users/$destinationUser
+echo "Do you want to give the $DIR_NAME account admin rights?"
+select yn in "Yes" "No"; do
+		case $yn in
+			Yes) /usr/sbin/dseditgroup -o edit -a "$DIR_NAME" -t user admin; echo "Admin rights given to this account"; break;;
+			No ) echo "No admin rights given"; break;;
+		esac
+done
+echo "   "
+sleep 2
 
 # copy the user data into the home
-# ditto $DIR_SOURCE /Users/$destinationUser
+echo "Copying user data to \"Transfer\" on their Desktop"
+mkdir /Users/$DIR_NAME/Desktop/Transfer
+echo "mkdir /Users/$DIR_NAME/Desktop/Transfer"
+echo "   "
+
+ditto -v $DIR_SOURCE /Users/$DIR_NAME/Desktop/Transfer/
+echo "ditto $DIR_SOURCE /Users/$DIR_NAME/Desktop/Transfer/"
+echo "  "
+sleep 6
 
 # change ownership so that the local/network account has ownership
-# chown -R $destinationUser /Users/$destinationUser
+echo "/usr/sbin/chown -R ${DIR_NAME} /Users/$DIR_NAME"
+/usr/sbin/chown -R ${DIR_NAME} /Users/$DIR_NAME
+
+echo "Done."

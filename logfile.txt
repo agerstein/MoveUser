@@ -1,5 +1,31 @@
-[H[2JPlease drag in the folder you want to copy and press Enter: 
-dir_source:  /Users/acc
-user_name:  acc
-Is the username "acc"? (Y/N)
-acc is target.
+[H[2JPlease drag in the home directory you want to copy and press Enter: 
+dir_source:  /Volumes/Untitled/Users/gersteina1-user
+user_name:  gersteina1-user
+Is the username "gersteina1-user"? (Y/N)
+gersteina1-user will be used.
+Please enter users full name:
+mkdir /Users/gersteina1-user
+Home for gersteina1-user now located at /Users/gersteina1-user
+    
+Creating....
+... account
+... shell set
+... real name set
+... UID
+... Primary Group assigned
+... NFS Home set
+... temp password set
+    
+Copying from User Template
+Done
+    
+Do you want to give the gersteina1-user account admin rights?
+No admin rights given
+   
+Copying user data to "Transfer" on their Desktop
+mkdir /Users/gersteina1-user/Desktop/Transfer
+   
+ditto /Volumes/Untitled/Users/gersteina1-user /Users/gersteina1-user/Desktop/Transfer/
+  
+/usr/sbin/chown -R gersteina1-user /Users/gersteina1-user
+Done.
