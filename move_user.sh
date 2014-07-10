@@ -8,7 +8,8 @@
 
 
 ACCOUNTPASSWORD="temppassword"
-# you should change this to reflect your requirements
+# you should change this to reflect your requirements - this is only for locally created accounts
+# AD/OD accounts will get their password from the directory.
 
 # pseudo code:
 # select user account (drag into terminal window)
@@ -19,11 +20,9 @@ ACCOUNTPASSWORD="temppassword"
 # chmod directory for ownership
 # log it all
 
-# logs everything we do to logfile.txt
+# logs some of what we do to logfile.txt
 exec > >(tee logfile.txt)
-#exec | tee logfile.txt
-
-# http://stackoverflow.com/questions/3173131/redirect-copy-of-stdout-to-log-file-from-within-bash-script-itself
+# inspiration from  http://stackoverflow.com/questions/3173131/redirect-copy-of-stdout-to-log-file-from-within-bash-script-itself
 
 # begin
 clear
@@ -82,7 +81,7 @@ else
 	echo "Please enter the username: "
 fi
 
-# prompt for their full name
+# prompt for their full name - only used for local account creation
 if [ "$REAL_NAME" == "" ]; then
 	echo "Please enter users full name:"
 	while [ -z "$REAL_NAME" ]; do
@@ -100,12 +99,15 @@ echo "Home for $DIR_NAME now located at /Users/$DIR_NAME"
 echo "    "
 
 # create the account
+# this is two different parts - directory based accounts vs. local accounts.
+# directory accounts hasn't been tested at this point, but I will update it as soon as I have a chance to test it.
+# it SHOULD work as is.
 
-# this should work when you have a directory service, i.e. AD configured
+# this should work when you have a directory service, i.e. AD/OD configured
 #/System/Library/CoreServices/ManagedClient.app/Contents/Resources/createmobileaccount -n $DIR_NAME
 #echo "Account for $DIR_NAME has been created on this computer"			
 
-# this should work for local accounts
+# this works for local accounts
 echo "Creating...."
 /usr/bin/dscl . create /Users/"${DIR_NAME}" # create account
 echo "... account"
@@ -115,7 +117,7 @@ echo "... shell set"
 echo "... real name set"
 /usr/bin/dscl . create /Users/"${DIR_NAME}" UniqueID 512 # assign a unique ID
 echo "... UID"
-# shouldn't do it this way, since if you move multiple users, they will have the same UID. That's bad. But if you're using this, it's likely for one user, or you will have turned switched this off and turned on the directory service version
+# We shouldn't do it this way, since if you move multiple users, they will have the same UID. That's bad. But if you're using this, it's likely for one user, or you will have switched this off and turned on the directory service version.
 
 /usr/bin/dscl . create /Users/"${DIR_NAME}" PrimaryGroupID 20 # assign a primary group
 echo "... Primary Group assigned"
@@ -155,6 +157,7 @@ sleep 6
 
 # change ownership so that the local/network account has ownership
 echo "/usr/sbin/chown -R ${DIR_NAME} /Users/$DIR_NAME"
+chflags -R nouchg /Users/"$DIR_NAME"
 /usr/sbin/chown -R "${DIR_NAME}" /Users/"$DIR_NAME"
 
 echo "Done."
